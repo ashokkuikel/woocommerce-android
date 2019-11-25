@@ -12,6 +12,7 @@ import org.greenrobot.eventbus.ThreadMode.MAIN
 import org.wordpress.android.fluxc.Dispatcher
 import org.wordpress.android.fluxc.action.WCProductAction.FETCH_SINGLE_PRODUCT
 import org.wordpress.android.fluxc.generated.WCProductActionBuilder
+import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductChanged
 import javax.inject.Inject
@@ -38,7 +39,7 @@ class ProductDetailRepository @Inject constructor(
         dispatcher.unregister(this)
     }
 
-    suspend fun fetchProduct(remoteProductId: Long): Product? {
+    suspend fun fetchProduct(remoteProductId: Long): WCProductModel? {
         suspendCoroutineWithTimeout<Boolean>(ACTION_TIMEOUT) {
             continuation = it
 
@@ -50,8 +51,8 @@ class ProductDetailRepository @Inject constructor(
         return getProduct(remoteProductId)
     }
 
-    fun getProduct(remoteProductId: Long): Product? =
-            productStore.getProductByRemoteId(selectedSite.get(), remoteProductId)?.toAppModel()
+    fun getProduct(remoteProductId: Long): WCProductModel? =
+            productStore.getProductByRemoteId(selectedSite.get(), remoteProductId)
 
     @SuppressWarnings("unused")
     @Subscribe(threadMode = MAIN)

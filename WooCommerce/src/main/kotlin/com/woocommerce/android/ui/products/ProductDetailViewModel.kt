@@ -8,6 +8,7 @@ import com.woocommerce.android.R
 import com.woocommerce.android.annotations.OpenClassOnDebug
 import com.woocommerce.android.di.ViewModelAssistedFactory
 import com.woocommerce.android.model.Product
+import com.woocommerce.android.model.toAppModel
 import com.woocommerce.android.tools.NetworkStatus
 import com.woocommerce.android.tools.SelectedSite
 import com.woocommerce.android.ui.products.ProductDetailViewModel.ProductDetailEvent.ShareProduct
@@ -20,6 +21,7 @@ import com.woocommerce.android.viewmodel.MultiLiveEvent.Event.ShowSnackbar
 import com.woocommerce.android.viewmodel.ScopedViewModel
 import kotlinx.android.parcel.Parcelize
 import kotlinx.coroutines.launch
+import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.store.WooCommerceStore
 import java.math.BigDecimal
 import kotlin.math.roundToInt
@@ -36,6 +38,7 @@ class ProductDetailViewModel @AssistedInject constructor(
 ) : ScopedViewModel(savedState, dispatchers) {
     private var remoteProductId = 0L
     private var parameters: Parameters? = null
+    private var wcProductModel: WCProductModel? = null
 
     val viewStateData = LiveDataDelegate(savedState, ViewState())
     private var viewState by viewStateData
@@ -63,7 +66,8 @@ class ProductDetailViewModel @AssistedInject constructor(
         this.remoteProductId = remoteProductId
 
         launch {
-            val productInDb = productRepository.getProduct(remoteProductId)
+            wcProductModel = productRepository.getProduct(remoteProductId)
+            val productInDb = getProduct()
             if (productInDb != null) {
                 updateProductState(productInDb)
                 if (shouldFetch) {
@@ -88,7 +92,8 @@ class ProductDetailViewModel @AssistedInject constructor(
 
     private suspend fun fetchProduct(remoteProductId: Long) {
         if (networkStatus.isConnected()) {
-            val fetchedProduct = productRepository.fetchProduct(remoteProductId)
+            wcProductModel = productRepository.fetchProduct(remoteProductId)
+            val fetchedProduct = getProduct()
             if (fetchedProduct != null) {
                 updateProductState(fetchedProduct)
             } else {
@@ -140,6 +145,8 @@ class ProductDetailViewModel @AssistedInject constructor(
             int.toString()
         }
     }
+
+    private fun getProduct(): Product? = wcProductModel?.toAppModel()
 
     sealed class ProductDetailEvent : Event() {
         data class ShareProduct(val product: Product) : ProductDetailEvent()
