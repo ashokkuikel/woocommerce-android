@@ -28,9 +28,11 @@ import com.woocommerce.android.analytics.AnalyticsTracker.Stat.PRODUCT_DETAIL_VI
 import com.woocommerce.android.analytics.AnalyticsTracker.Stat.PRODUCT_DETAIL_VIEW_EXTERNAL_TAPPED
 import com.woocommerce.android.extensions.takeIfNotEqualTo
 import com.woocommerce.android.model.Product
+import com.woocommerce.android.ui.aztec.AztecEditorFragment.Companion.AZTEC_EDITOR_REQUEST_CODE
 import com.woocommerce.android.ui.base.BaseFragment
 import com.woocommerce.android.ui.base.UIMessageResolver
 import com.woocommerce.android.ui.imageviewer.ImageViewerActivity
+import com.woocommerce.android.ui.main.MainActivity.NavigationResult
 import com.woocommerce.android.ui.products.ProductDetailViewModel.ProductDetailEvent.ShareProduct
 import com.woocommerce.android.ui.products.ProductDetailViewModel.ViewState
 import com.woocommerce.android.ui.products.ProductType.EXTERNAL
@@ -50,7 +52,7 @@ import org.wordpress.android.util.DisplayUtils
 import org.wordpress.android.util.HtmlUtils
 import javax.inject.Inject
 
-class ProductDetailFragment : BaseFragment(), OnGalleryImageClickListener {
+class ProductDetailFragment : BaseFragment(), OnGalleryImageClickListener, NavigationResult {
     private enum class DetailCard {
         Primary,
         PricingAndInventory,
@@ -561,6 +563,14 @@ class ProductDetailFragment : BaseFragment(), OnGalleryImageClickListener {
             getString(status.stringResource)
         } else {
             status.value
+        }
+    }
+
+    override fun onNavigationResult(requestCode: Int, result: Bundle) {
+        when (requestCode) {
+            AZTEC_EDITOR_REQUEST_CODE -> {
+                // TODO: add logic to update product description to viewmodel in another commit
+            }
         }
     }
 
