@@ -1,13 +1,13 @@
 package com.woocommerce.android.model
 
 import android.os.Parcelable
+import com.woocommerce.android.extensions.dateFromIso8601
 import com.woocommerce.android.ui.products.ProductBackorderStatus
 import com.woocommerce.android.ui.products.ProductStatus
 import com.woocommerce.android.ui.products.ProductStockStatus
 import com.woocommerce.android.ui.products.ProductType
 import kotlinx.android.parcel.Parcelize
 import org.wordpress.android.fluxc.model.WCProductModel
-import org.wordpress.android.util.DateTimeUtils
 import java.math.BigDecimal
 import java.util.Date
 
@@ -76,7 +76,7 @@ fun WCProductModel.toAppModel(): Product {
         ProductStatus.fromString(this.status),
         ProductStockStatus.fromString(this.stockStatus),
         ProductBackorderStatus.fromString(this.backorders),
-        DateTimeUtils.dateFromIso8601(this.dateCreated) ?: Date(),
+            this.dateCreated.dateFromIso8601() ?: Date(),
         this.getFirstImageUrl(),
         this.totalSales,
         this.reviewsAllowed,
@@ -108,7 +108,7 @@ fun WCProductModel.toAppModel(): Product {
                     it.id,
                     it.name,
                     it.src,
-                    DateTimeUtils.dateFromIso8601(this.dateCreated) ?: Date()
+                    this.dateCreated.dateFromIso8601() ?: Date()
             )
         },
         this.getAttributes().map {
