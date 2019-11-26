@@ -11,6 +11,7 @@ import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
 import com.woocommerce.android.R
 import com.woocommerce.android.extensions.takeIfNotEqualTo
+import com.woocommerce.android.model.toAppModel
 import com.woocommerce.android.tools.NetworkStatus
 import com.woocommerce.android.tools.SelectedSite
 import com.woocommerce.android.ui.products.ProductDetailViewModel.ViewState
@@ -41,12 +42,12 @@ class ProductDetailViewModelTest : BaseUnitTest() {
 
     private val coroutineDispatchers = CoroutineDispatchers(
             Dispatchers.Unconfined, Dispatchers.Unconfined, Dispatchers.Unconfined)
-    private val product = ProductTestUtils.generateProduct()
-    private val productRemoteId = product.remoteId
+    private val product = ProductTestUtils.generateProductModel()
+    private val productRemoteId = product.remoteProductId
     private lateinit var viewModel: ProductDetailViewModel
 
     private val productWithParameters = ViewState(
-        product,
+        product.toAppModel(),
         "10kg",
         "1 x 2 x 3 cm",
         "CZK20.00",

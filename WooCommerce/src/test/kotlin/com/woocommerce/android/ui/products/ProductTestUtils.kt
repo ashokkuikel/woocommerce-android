@@ -7,7 +7,7 @@ import org.wordpress.android.fluxc.model.WCProductModel
 import org.wordpress.android.fluxc.model.WCProductVariationModel
 
 object ProductTestUtils {
-    fun generateProduct(productId: Long = 1L): Product {
+    fun generateProductModel(productId: Long = 1L): WCProductModel {
         return WCProductModel(2).apply {
             dateCreated = "2018-01-05T05:14:30Z"
             localSiteId = 1
@@ -27,7 +27,10 @@ object ProductTestUtils {
             height = "3"
             variations = "[]"
             attributes = "[]"
-        }.toAppModel()
+        }
+    }
+    fun generateProduct(productId: Long = 1L): Product {
+        return generateProductModel(productId).toAppModel()
     }
 
     fun generateProductList(): List<Product> {
