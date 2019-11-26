@@ -126,9 +126,9 @@ fun String.formatToMonthDateOnly(): String {
 @Throws(IllegalArgumentException::class)
 fun String.dateFromIso8601(): Date? {
     return try {
-        val formatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US)
+        val formatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US)
         formatter.parse(this)
     } catch (e: Exception) {
-        throw IllegalArgumentException("Date string argument is not of format yyyy-MM-dd'T'HH:mm:ss'Z': $this")
+        throw IllegalArgumentException("Date string argument is not of format yyyy-MM-dd'T'HH:mm:ss: $this")
     }
 }
