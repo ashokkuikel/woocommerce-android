@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Base application theme. -->
     <style name="AppTheme.Base" parent="Theme.AppCompat.Light.NoActionBar">
@@ -741,6 +741,28 @@
         <item name="android:drawableStart">@drawable/ic_gridicons_tools</item>
         <item name="android:textSize">@dimen/text_large</item>
         <item name="android:textColor">@color/black_85</item>
+    </style>
+
+    <style name="Woo.MaterialComponents.EditText" parent="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        <item name="android:textColor">@color/wc_black_darker</item>
+        <item name="android:textColorHint">@color/wc_black_lighter</item>
+        <item name="android:textSize">@dimen/text_large</item>
+        <item name="colorControlNormal">@color/list_divider</item>
+        <item name="android:colorAccent">@color/list_divider</item>
+        <item name="boxStrokeColor">@color/list_divider</item>
+        <item name="hintTextAppearance">@style/Woo.MaterialComponents.EditText.HintTextAppearance</item>
+        <item name="colorControlActivated">@color/list_divider</item>
+        <item name="colorControlHighlight">@color/list_divider</item>
+        <item name="android:textAlignment">viewStart</item>
+        <item name="android:gravity">start</item>
+    </style>
+
+    <style name="Woo.MaterialComponents.EditText.HintTextAppearance" parent="Woo.TextAppearance">
+        <item name="android:textColor">@color/wc_black_lighter</item>
+    </style>
+
+    <style name="Woo.MaterialComponents.EditText.Summary" parent="Woo.TextAppearance.Small">
+        <item name="android:textColor">@color/wc_black_lighter</item>
     </style>
 
 </resources>
