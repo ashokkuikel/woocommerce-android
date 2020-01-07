@@ -8,6 +8,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.navArgs
 import com.woocommerce.android.R
+import com.woocommerce.android.RequestCodes
 import com.woocommerce.android.analytics.AnalyticsTracker
 import com.woocommerce.android.extensions.collapse
 import com.woocommerce.android.extensions.expand
@@ -15,6 +16,7 @@ import com.woocommerce.android.extensions.takeIfNotEqualTo
 import com.woocommerce.android.ui.base.BaseFragment
 import com.woocommerce.android.ui.base.UIMessageResolver
 import com.woocommerce.android.ui.dialog.CustomDiscardDialog
+import com.woocommerce.android.ui.products.ProductInventorySelectorDialog.ProductInventorySelectorDialogListener
 import com.woocommerce.android.ui.products.ProductInventoryViewModel.ViewState
 import com.woocommerce.android.viewmodel.MultiLiveEvent.Event.ShowDiscardDialog
 import com.woocommerce.android.viewmodel.MultiLiveEvent.Event.ShowSnackbar
@@ -22,7 +24,7 @@ import com.woocommerce.android.viewmodel.ViewModelFactory
 import kotlinx.android.synthetic.main.fragment_product_inventory.*
 import javax.inject.Inject
 
-class ProductInventoryFragment : BaseFragment() {
+class ProductInventoryFragment : BaseFragment(), ProductInventorySelectorDialogListener {
     private val navArgs: ProductInventoryFragmentArgs by navArgs()
 
     @Inject lateinit var viewModelFactory: ViewModelFactory
@@ -58,8 +60,6 @@ class ProductInventoryFragment : BaseFragment() {
 
     private fun setupObservers(viewModel: ProductInventoryViewModel) {
         viewModel.viewStateLiveData.observe(viewLifecycleOwner) { old, new ->
-//            new.isProductUpdated?.takeIfNotEqualTo(old?.isProductUpdated) { showUpdateProductAction(it) }
-//            new.isProgressDialogShown?.takeIfNotEqualTo(old?.isProgressDialogShown) { showProgressDialog(it) }
             new.product?.takeIfNotEqualTo(old?.product) { showProduct(new) }
         }
 
@@ -83,15 +83,29 @@ class ProductInventoryFragment : BaseFragment() {
             product_sku.setText(product.sku)
         }
 
-        product_stock_quantity.setText(product.stockQuantity.toString())
-        edit_product_backorders.setText(product.backordersToDisplayString(requireContext()))
-        edit_product_stock_status.setText(product.stockStatusToDisplayString(requireContext()))
-
         val manageStock = product.manageStock
         manageStock_switch.isChecked = manageStock
         enableManageStockStatus(manageStock)
         manageStock_switch.setOnCheckedChangeListener { _, b ->
             enableManageStockStatus(b)
+        }
+
+        product_stock_quantity.setText(product.stockQuantity.toString())
+        edit_product_backorders.setText(product.backordersToDisplayString(requireContext()))
+        edit_product_stock_status.setText(product.stockStatusToDisplayString(requireContext()))
+
+        edit_product_backorders.setClickListener {
+            ProductInventorySelectorDialog.newInstance(this,
+                    RequestCodes.PRODUCT_INVENTORY_BACKORDERS, getString(R.string.product_backorders),
+                    ProductBackorderStatus.toMap(requireContext()), edit_product_backorders.getText()
+            ).show(parentFragmentManager, ProductInventorySelectorDialog.TAG)
+        }
+
+        edit_product_stock_status.setClickListener {
+            ProductInventorySelectorDialog.newInstance(this,
+                    RequestCodes.PRODUCT_INVENTORY_STOCK_STATUS, getString(R.string.product_stock_status),
+                    ProductStockStatus.toMap(requireContext()), edit_product_stock_status.getText()
+            ).show(parentFragmentManager, ProductInventorySelectorDialog.TAG)
         }
     }
 
@@ -102,6 +116,21 @@ class ProductInventoryFragment : BaseFragment() {
         } else {
             edit_product_stock_status.visibility = View.VISIBLE
             manageStock_morePanel.collapse()
+        }
+    }
+
+    override fun onProductInventoryItemSelected(resultCode: Int, selectedItem: String?) {
+        when (resultCode) {
+            RequestCodes.PRODUCT_INVENTORY_BACKORDERS -> {
+                selectedItem?.let {
+                    edit_product_backorders.setText(getString(ProductBackorderStatus.toStringResource(it)))
+                }
+            }
+            RequestCodes.PRODUCT_INVENTORY_STOCK_STATUS -> {
+                selectedItem?.let {
+                    edit_product_stock_status.setText(getString(ProductStockStatus.toStringResource(it)))
+                }
+            }
         }
     }
 }
