@@ -26,11 +26,19 @@ sealed class ProductStockStatus(@StringRes val stringResource: Int = 0, val valu
     companion object {
         fun fromString(value: String?): ProductStockStatus {
             return when (value) {
-                "instock" -> InStock
-                "outofstock" -> OutOfStock
-                "onbackorder" -> OnBackorder
+                CoreProductStockStatus.IN_STOCK.value -> InStock
+                CoreProductStockStatus.OUT_OF_STOCK.value -> OutOfStock
+                CoreProductStockStatus.ON_BACK_ORDER.value -> OnBackorder
                 null, "" -> NotAvailable
                 else -> Custom(value)
+            }
+        }
+
+        fun fromStockStatus(stockStatus: ProductStockStatus): String {
+            return when(stockStatus) {
+                OnBackorder -> CoreProductStockStatus.ON_BACK_ORDER.value
+                OutOfStock -> CoreProductStockStatus.OUT_OF_STOCK.value
+                else -> CoreProductStockStatus.IN_STOCK.value
             }
         }
 

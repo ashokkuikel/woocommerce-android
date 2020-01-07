@@ -26,6 +26,7 @@ import com.woocommerce.android.viewmodel.MultiLiveEvent.Event.Exit
 import com.woocommerce.android.viewmodel.MultiLiveEvent.Event.ShowDiscardDialog
 import com.woocommerce.android.viewmodel.MultiLiveEvent.Event.ShowSnackbar
 import com.woocommerce.android.viewmodel.ViewModelFactory
+import com.woocommerce.android.widgets.CustomProgressDialog
 import kotlinx.android.synthetic.main.fragment_product_inventory.*
 import org.wordpress.android.util.ActivityUtils
 import javax.inject.Inject
@@ -40,6 +41,8 @@ class ProductInventoryFragment : BaseFragment(), ProductInventorySelectorDialogL
     private val viewModel: ProductInventoryViewModel by viewModels { viewModelFactory }
 
     private var publishMenuItem: MenuItem? = null
+    private var progressDialog: CustomProgressDialog? = null
+
     private var productBackOrderSelectorDialog: ProductInventorySelectorDialog? = null
     private var productStockStatusSelectorDialog: ProductInventorySelectorDialog? = null
 
@@ -87,6 +90,18 @@ class ProductInventoryFragment : BaseFragment(), ProductInventorySelectorDialogL
         publishMenuItem = menu.findItem(R.id.menu_update)
     }
 
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.menu_update -> {
+                // TODO: add track event for click
+                ActivityUtils.hideKeyboard(activity)
+                viewModel.onUpdateButtonClicked()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
     private fun initializeViewModel() {
         setupObservers(viewModel)
         viewModel.start(navArgs.remoteProductId)
@@ -95,6 +110,7 @@ class ProductInventoryFragment : BaseFragment(), ProductInventorySelectorDialogL
     private fun setupObservers(viewModel: ProductInventoryViewModel) {
         viewModel.viewStateLiveData.observe(viewLifecycleOwner) { old, new ->
             new.isProductUpdated.takeIfNotEqualTo(old?.isProductUpdated) { showUpdateProductAction(it) }
+            new.isProgressDialogShown?.takeIfNotEqualTo(old?.isProgressDialogShown) { showProgressDialog(it) }
             new.product?.takeIfNotEqualTo(old?.product) { showProduct(new) }
         }
 
@@ -181,6 +197,24 @@ class ProductInventoryFragment : BaseFragment(), ProductInventorySelectorDialogL
 
     private fun showUpdateProductAction(show: Boolean) {
         view?.post { publishMenuItem?.isVisible = show }
+    }
+
+    private fun showProgressDialog(show: Boolean) {
+        if (show) {
+            hideProgressDialog()
+            progressDialog = CustomProgressDialog.show(
+                    getString(R.string.product_update_dialog_title),
+                    getString(R.string.product_update_dialog_message)
+            ).also { it.show(parentFragmentManager, CustomProgressDialog.TAG) }
+            progressDialog?.isCancelable = false
+        } else {
+            hideProgressDialog()
+        }
+    }
+
+    private fun hideProgressDialog() {
+        progressDialog?.dismiss()
+        progressDialog = null
     }
 
     override fun onProductInventoryItemSelected(resultCode: Int, selectedItem: String?) {

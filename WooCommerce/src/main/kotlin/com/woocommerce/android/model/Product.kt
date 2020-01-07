@@ -155,6 +155,12 @@ fun Product.toDataModel(storedProductModel: WCProductModel?): WCProductModel {
         it.remoteProductId = remoteId
         it.description = description
         it.name = name
+        it.sku = sku
+        it.manageStock = manageStock
+        it.stockStatus = ProductStockStatus.fromStockStatus(stockStatus)
+        it.soldIndividually = soldIndividually
+        it.stockQuantity = stockQuantity
+        it.backorders = ProductBackorderStatus.fromBackorderStatus(backorderStatus)
     }
 }
 

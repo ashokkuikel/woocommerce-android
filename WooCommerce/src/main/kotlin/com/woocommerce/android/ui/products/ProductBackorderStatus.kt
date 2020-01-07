@@ -26,11 +26,19 @@ sealed class ProductBackorderStatus(@StringRes val stringResource: Int = 0, val 
     companion object {
         fun fromString(value: String?): ProductBackorderStatus {
             return when (value) {
-                "no" -> No
-                "yes" -> Yes
-                "notify" -> Notify
+                CoreProductBackOrders.NO.value -> No
+                CoreProductBackOrders.YES.value -> Yes
+                CoreProductBackOrders.NOTIFY.value -> Notify
                 null, "" -> NotAvailable
                 else -> Custom(value)
+            }
+        }
+
+        fun fromBackorderStatus(backorderStatus: ProductBackorderStatus): String {
+            return when(backorderStatus) {
+                Yes -> CoreProductBackOrders.YES.value
+                Notify -> CoreProductBackOrders.NOTIFY.value
+                else -> CoreProductBackOrders.NO.value
             }
         }
 

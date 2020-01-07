@@ -4,6 +4,7 @@ import android.content.DialogInterface
 import android.os.Parcelable
 import com.squareup.inject.assisted.Assisted
 import com.squareup.inject.assisted.AssistedInject
+import com.woocommerce.android.R.string
 import com.woocommerce.android.di.ViewModelAssistedFactory
 import com.woocommerce.android.model.Product
 import com.woocommerce.android.tools.NetworkStatus
@@ -12,6 +13,7 @@ import com.woocommerce.android.util.CoroutineDispatchers
 import com.woocommerce.android.viewmodel.LiveDataDelegate
 import com.woocommerce.android.viewmodel.MultiLiveEvent.Event.Exit
 import com.woocommerce.android.viewmodel.MultiLiveEvent.Event.ShowDiscardDialog
+import com.woocommerce.android.viewmodel.MultiLiveEvent.Event.ShowSnackbar
 import com.woocommerce.android.viewmodel.SavedStateWithArgs
 import com.woocommerce.android.viewmodel.ScopedViewModel
 import kotlinx.android.parcel.Parcelize
@@ -85,6 +87,13 @@ class ProductInventoryViewModel @AssistedInject constructor(
         }
     }
 
+    fun onUpdateButtonClicked() {
+        viewState.product?.let {
+            viewState = viewState.copy(isProgressDialogShown = true)
+            launch { updateProduct(it) }
+        }
+    }
+
     fun onBackButtonClicked(): Boolean {
         return if (viewState.isProductUpdated == true && viewState.shouldShowDiscardDialog) {
             triggerEvent(ShowDiscardDialog(
@@ -111,6 +120,22 @@ class ProductInventoryViewModel @AssistedInject constructor(
                         storedProduct = productInDb
                 )
             }
+        }
+    }
+
+    private suspend fun updateProduct(product: Product) {
+        if (networkStatus.isConnected()) {
+            if (productRepository.updateProduct(product)) {
+                triggerEvent(ShowSnackbar(string.product_detail_update_product_success))
+                viewState = viewState.copy(isProgressDialogShown = false, isProductUpdated = false, product = null)
+                loadProduct(product.remoteId)
+            } else {
+                triggerEvent(ShowSnackbar(string.product_detail_update_product_error))
+                viewState = viewState.copy(isProgressDialogShown = false)
+            }
+        } else {
+            triggerEvent(ShowSnackbar(string.offline_error))
+            viewState = viewState.copy(isProgressDialogShown = false)
         }
     }
 
