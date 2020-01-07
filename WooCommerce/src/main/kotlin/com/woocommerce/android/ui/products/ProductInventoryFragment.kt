@@ -40,6 +40,8 @@ class ProductInventoryFragment : BaseFragment(), ProductInventorySelectorDialogL
     private val viewModel: ProductInventoryViewModel by viewModels { viewModelFactory }
 
     private var publishMenuItem: MenuItem? = null
+    private var productBackOrderSelectorDialog: ProductInventorySelectorDialog? = null
+    private var productStockStatusSelectorDialog: ProductInventorySelectorDialog? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -61,6 +63,15 @@ class ProductInventoryFragment : BaseFragment(), ProductInventorySelectorDialogL
         activity?.let {
             ActivityUtils.hideKeyboard(it)
         }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        productBackOrderSelectorDialog?.dismiss()
+        productBackOrderSelectorDialog = null
+
+        productStockStatusSelectorDialog?.dismiss()
+        productStockStatusSelectorDialog = null
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -132,20 +143,20 @@ class ProductInventoryFragment : BaseFragment(), ProductInventorySelectorDialogL
         with(edit_product_backorders) {
             setText(product.backordersToDisplayString(requireContext()))
             setClickListener {
-                ProductInventorySelectorDialog.newInstance(this@ProductInventoryFragment,
+                productBackOrderSelectorDialog = ProductInventorySelectorDialog.newInstance(this@ProductInventoryFragment,
                         RequestCodes.PRODUCT_INVENTORY_BACKORDERS, getString(R.string.product_backorders),
                         ProductBackorderStatus.toMap(requireContext()), edit_product_backorders.getText()
-                ).show(parentFragmentManager, ProductInventorySelectorDialog.TAG)
+                ).also { it.show(parentFragmentManager, ProductInventorySelectorDialog.TAG) }
             }
         }
 
         with(edit_product_stock_status) {
             setText(product.stockStatusToDisplayString(requireContext()))
             setClickListener {
-                ProductInventorySelectorDialog.newInstance(this@ProductInventoryFragment,
+                productStockStatusSelectorDialog = ProductInventorySelectorDialog.newInstance(this@ProductInventoryFragment,
                         RequestCodes.PRODUCT_INVENTORY_STOCK_STATUS, getString(R.string.product_stock_status),
                         ProductStockStatus.toMap(requireContext()), edit_product_stock_status.getText()
-                ).show(parentFragmentManager, ProductInventorySelectorDialog.TAG)
+                ).also { it.show(parentFragmentManager, ProductInventorySelectorDialog.TAG) }
             }
         }
 

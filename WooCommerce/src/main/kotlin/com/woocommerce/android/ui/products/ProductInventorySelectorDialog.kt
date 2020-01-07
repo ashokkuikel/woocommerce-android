@@ -36,6 +36,7 @@ class ProductInventorySelectorDialog : DialogFragment() {
         ): ProductInventorySelectorDialog {
             val fragment = ProductInventorySelectorDialog()
             fragment.setTargetFragment(listener, RequestCodes.PRODUCT_INVENTORY)
+            fragment.retainInstance = true
             fragment.resultCode = resultCode
             fragment.dialogTitle = dialogTitle
             fragment.listItemMap = listItemMap
@@ -51,8 +52,8 @@ class ProductInventorySelectorDialog : DialogFragment() {
     private var resultCode: Int = -1
     private var selectedListItem: String? = null
 
-    private lateinit var dialogTitle: String
-    private lateinit var listItemMap: Map<String, String>
+    private var dialogTitle: String? = null
+    private var listItemMap: Map<String, String>? = null
 
     private var listener: ProductInventorySelectorDialogListener? = null
 
@@ -66,15 +67,15 @@ class ProductInventorySelectorDialog : DialogFragment() {
 
         val builder = AlertDialog.Builder(requireContext())
         builder.setTitle(dialogTitle)
-                .setSingleChoiceItems(listItemMap.values.toTypedArray(), selectedIndex) { dialog, which ->
-                    listener?.onProductInventoryItemSelected(resultCode, listItemMap.keys.toTypedArray()[which])
+                .setSingleChoiceItems(listItemMap?.values?.toTypedArray(), selectedIndex) { dialog, which ->
+                    listener?.onProductInventoryItemSelected(resultCode, listItemMap?.keys?.toTypedArray()?.get(which))
                     dialog.dismiss()
                 }
         return builder.create()
     }
 
     private fun getCurrentProductInventoryListIndex(): Int {
-        return listItemMap.values.indexOfFirst { it == selectedListItem }
+        return listItemMap?.values?.indexOfFirst { it == selectedListItem } ?: 0
     }
 
     override fun onResume() {
