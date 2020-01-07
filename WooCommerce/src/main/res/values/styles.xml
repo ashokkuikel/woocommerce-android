@@ -765,4 +765,9 @@
         <item name="android:textColor">@color/wc_black_lighter</item>
     </style>
 
+    <style name="Woo.Product"/>
+    <style name="Woo.Product.Label" parent="Woo.TextAppearance.Large">
+        <item name="android:textColor">@color/wc_black_darker</item>
+    </style>
+
 </resources>
