@@ -118,7 +118,7 @@ class ProductInventoryViewModel @AssistedInject constructor(
     data class ViewState(
         val product: Product? = null,
         val isProgressDialogShown: Boolean? = null,
-        val isProductUpdated: Boolean? = null,
+        val isProductUpdated: Boolean = false,
         val shouldShowDiscardDialog: Boolean = true,
         var storedProduct: Product? = null
     ) : Parcelable

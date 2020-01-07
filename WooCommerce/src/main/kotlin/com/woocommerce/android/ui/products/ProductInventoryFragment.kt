@@ -85,7 +85,6 @@ class ProductInventoryFragment : BaseFragment(), ProductInventorySelectorDialogL
         menu.clear()
         inflater.inflate(R.menu.menu_update, menu)
         publishMenuItem = menu.findItem(R.id.menu_update)
-        showUpdateProductAction(false)
     }
 
     private fun initializeViewModel() {
@@ -95,8 +94,8 @@ class ProductInventoryFragment : BaseFragment(), ProductInventorySelectorDialogL
 
     private fun setupObservers(viewModel: ProductInventoryViewModel) {
         viewModel.viewStateLiveData.observe(viewLifecycleOwner) { old, new ->
+            new.isProductUpdated.takeIfNotEqualTo(old?.isProductUpdated) { showUpdateProductAction(it) }
             new.product?.takeIfNotEqualTo(old?.product) { showProduct(new) }
-            new.isProductUpdated?.takeIfNotEqualTo(old?.isProductUpdated) { showUpdateProductAction(it) }
         }
 
         viewModel.event.observe(viewLifecycleOwner, Observer { event ->
@@ -143,9 +142,10 @@ class ProductInventoryFragment : BaseFragment(), ProductInventorySelectorDialogL
         with(edit_product_backorders) {
             setText(product.backordersToDisplayString(requireContext()))
             setClickListener {
-                productBackOrderSelectorDialog = ProductInventorySelectorDialog.newInstance(this@ProductInventoryFragment,
-                        RequestCodes.PRODUCT_INVENTORY_BACKORDERS, getString(R.string.product_backorders),
-                        ProductBackorderStatus.toMap(requireContext()), edit_product_backorders.getText()
+                productBackOrderSelectorDialog = ProductInventorySelectorDialog.newInstance(
+                        this@ProductInventoryFragment, RequestCodes.PRODUCT_INVENTORY_BACKORDERS,
+                        getString(R.string.product_backorders), ProductBackorderStatus.toMap(requireContext()),
+                        edit_product_backorders.getText()
                 ).also { it.show(parentFragmentManager, ProductInventorySelectorDialog.TAG) }
             }
         }
@@ -153,9 +153,10 @@ class ProductInventoryFragment : BaseFragment(), ProductInventorySelectorDialogL
         with(edit_product_stock_status) {
             setText(product.stockStatusToDisplayString(requireContext()))
             setClickListener {
-                productStockStatusSelectorDialog = ProductInventorySelectorDialog.newInstance(this@ProductInventoryFragment,
-                        RequestCodes.PRODUCT_INVENTORY_STOCK_STATUS, getString(R.string.product_stock_status),
-                        ProductStockStatus.toMap(requireContext()), edit_product_stock_status.getText()
+                productStockStatusSelectorDialog = ProductInventorySelectorDialog.newInstance(
+                        this@ProductInventoryFragment, RequestCodes.PRODUCT_INVENTORY_STOCK_STATUS,
+                        getString(R.string.product_stock_status), ProductStockStatus.toMap(requireContext()),
+                        edit_product_stock_status.getText()
                 ).also { it.show(parentFragmentManager, ProductInventorySelectorDialog.TAG) }
             }
         }

@@ -106,6 +106,24 @@ data class Product(
                 if (updatedProduct.name != this.name) {
                     name = updatedProduct.name
                 }
+                if (updatedProduct.sku != this.sku) {
+                    sku = updatedProduct.sku
+                }
+                if (updatedProduct.manageStock != this.manageStock) {
+                    manageStock = updatedProduct.manageStock
+                }
+                if (updatedProduct.stockStatus != this.stockStatus) {
+                    stockStatus = updatedProduct.stockStatus
+                }
+                if (updatedProduct.soldIndividually != this.soldIndividually) {
+                    soldIndividually = updatedProduct.soldIndividually
+                }
+                if (updatedProduct.stockQuantity != this.stockQuantity) {
+                    stockQuantity = updatedProduct.stockQuantity
+                }
+                if (updatedProduct.backorderStatus != this.backorderStatus) {
+                    backorderStatus = updatedProduct.backorderStatus
+                }
             }
         } ?: this.copy()
     }
