@@ -1,5 +1,6 @@
 package com.woocommerce.android.ui.products
 
+import android.content.DialogInterface
 import android.os.Parcelable
 import com.squareup.inject.assisted.Assisted
 import com.squareup.inject.assisted.AssistedInject
@@ -9,6 +10,8 @@ import com.woocommerce.android.tools.NetworkStatus
 import com.woocommerce.android.tools.SelectedSite
 import com.woocommerce.android.util.CoroutineDispatchers
 import com.woocommerce.android.viewmodel.LiveDataDelegate
+import com.woocommerce.android.viewmodel.MultiLiveEvent.Event.Exit
+import com.woocommerce.android.viewmodel.MultiLiveEvent.Event.ShowDiscardDialog
 import com.woocommerce.android.viewmodel.SavedStateWithArgs
 import com.woocommerce.android.viewmodel.ScopedViewModel
 import kotlinx.android.parcel.Parcelize
@@ -34,7 +37,7 @@ class ProductInventoryViewModel @AssistedInject constructor(
     }
 
     /**
-     * Update all product fields that are edited by the user
+     * Update all product inventory fields that are edited by the user
      */
     fun updateProductInventoryDraft(
         sku: String? = null,
@@ -79,6 +82,23 @@ class ProductInventoryViewModel @AssistedInject constructor(
         viewState.product?.let {
             val isProductUpdated = viewState.storedProduct?.isSameProduct(it) == false
             viewState = viewState.copy(isProductUpdated = isProductUpdated)
+        }
+    }
+
+    fun onBackButtonClicked(): Boolean {
+        return if (viewState.isProductUpdated == true && viewState.shouldShowDiscardDialog) {
+            triggerEvent(ShowDiscardDialog(
+                    positiveBtnAction = DialogInterface.OnClickListener { _, _ ->
+                        viewState = viewState.copy(shouldShowDiscardDialog = false)
+                        triggerEvent(Exit)
+                    },
+                    negativeBtnAction = DialogInterface.OnClickListener { _, _ ->
+                        viewState = viewState.copy(shouldShowDiscardDialog = true)
+                    }
+            ))
+            false
+        } else {
+            true
         }
     }
 
