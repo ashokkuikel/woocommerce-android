@@ -33,12 +33,61 @@ class ProductInventoryViewModel @AssistedInject constructor(
         productRepository.onCleanup()
     }
 
+    /**
+     * Update all product fields that are edited by the user
+     */
+    fun updateProductInventoryDraft(
+        sku: String? = null,
+        manageStock: Boolean? = null,
+        stockStatus: ProductStockStatus? = null,
+        soldIndividually: Boolean? = null,
+        stockQuantity: String? = null,
+        backorderStatus: ProductBackorderStatus? = null
+    ) {
+        sku?.let {
+            if (it != viewState.product?.sku) {
+                viewState.product?.sku = it
+            }
+        }
+        manageStock?.let {
+            if (it != viewState.product?.manageStock) {
+                viewState.product?.manageStock = it
+            }
+        }
+        stockStatus?.let {
+            if (it != viewState.product?.stockStatus) {
+                viewState.product?.stockStatus = it
+            }
+        }
+        soldIndividually?.let {
+            if (it != viewState.product?.soldIndividually) {
+                viewState.product?.soldIndividually = it
+            }
+        }
+        stockQuantity?.let {
+            val quantity = it.toInt()
+            if (quantity != viewState.product?.stockQuantity) {
+                viewState.product?.stockQuantity = quantity
+            }
+        }
+        backorderStatus?.let {
+            if (it != viewState.product?.backorderStatus) {
+                viewState.product?.backorderStatus = it
+            }
+        }
+
+        viewState.product?.let {
+            val isProductUpdated = viewState.storedProduct?.isSameProduct(it) == false
+            viewState = viewState.copy(isProductUpdated = isProductUpdated)
+        }
+    }
+
     private fun loadProduct(remoteProductId: Long) {
         launch {
             val productInDb = productRepository.getProduct(remoteProductId)
             if (productInDb != null) {
                 viewState = viewState.copy(
-                        product = productInDb,
+                        product = productInDb.mergeProduct(viewState.product),
                         storedProduct = productInDb
                 )
             }

@@ -21,8 +21,8 @@ data class Product(
     var description: String,
     val type: ProductType,
     val status: ProductStatus?,
-    val stockStatus: ProductStockStatus,
-    val backorderStatus: ProductBackorderStatus,
+    var stockStatus: ProductStockStatus,
+    var backorderStatus: ProductBackorderStatus,
     val dateCreated: Date,
     val firstImageUrl: String?,
     val totalSales: Int,
@@ -36,9 +36,9 @@ data class Product(
     val salePrice: BigDecimal?,
     val regularPrice: BigDecimal?,
     val taxClass: String,
-    val manageStock: Boolean,
-    val stockQuantity: Int,
-    val sku: String,
+    var manageStock: Boolean,
+    var stockQuantity: Int,
+    var sku: String,
     val length: Float,
     val width: Float,
     val height: Float,
@@ -53,7 +53,8 @@ data class Product(
     val images: List<Image>,
     val attributes: List<Attribute>,
     val dateOnSaleTo: Date?,
-    val dateOnSaleFrom: Date?
+    val dateOnSaleFrom: Date?,
+    var soldIndividually: Boolean
 ) : Parcelable {
     @Parcelize
     data class Image(
@@ -81,6 +82,9 @@ data class Product(
                 numVariations == product.numVariations &&
                 name == product.name &&
                 description == product.description &&
+                sku == product.sku &&
+                soldIndividually == product.soldIndividually &&
+                backorderStatus == product.backorderStatus &&
                 images == product.images
     }
 
@@ -189,7 +193,8 @@ fun WCProductModel.toAppModel(): Product {
             )
         },
         this.dateOnSaleTo.formatDateToISO8601Format(),
-        this.dateOnSaleFrom.formatDateToISO8601Format()
+        this.dateOnSaleFrom.formatDateToISO8601Format(),
+        this.soldIndividually
     )
 }
 

@@ -2,6 +2,9 @@ package com.woocommerce.android.ui.products
 
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
@@ -32,6 +35,8 @@ class ProductInventoryFragment : BaseFragment(), ProductInventorySelectorDialogL
 
     private val viewModel: ProductInventoryViewModel by viewModels { viewModelFactory }
 
+    private var publishMenuItem: MenuItem? = null
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -53,6 +58,13 @@ class ProductInventoryFragment : BaseFragment(), ProductInventorySelectorDialogL
 
     override fun getFragmentTitle() = getString(R.string.product_inventory)
 
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        menu.clear()
+        inflater.inflate(R.menu.menu_update, menu)
+        publishMenuItem = menu.findItem(R.id.menu_update)
+        showUpdateProductAction(false)
+    }
+
     private fun initializeViewModel() {
         setupObservers(viewModel)
         viewModel.start(navArgs.remoteProductId)
@@ -61,6 +73,7 @@ class ProductInventoryFragment : BaseFragment(), ProductInventorySelectorDialogL
     private fun setupObservers(viewModel: ProductInventoryViewModel) {
         viewModel.viewStateLiveData.observe(viewLifecycleOwner) { old, new ->
             new.product?.takeIfNotEqualTo(old?.product) { showProduct(new) }
+            new.isProductUpdated?.takeIfNotEqualTo(old?.isProductUpdated) { showUpdateProductAction(it) }
         }
 
         viewModel.event.observe(viewLifecycleOwner, Observer { event ->
@@ -82,30 +95,52 @@ class ProductInventoryFragment : BaseFragment(), ProductInventorySelectorDialogL
         if (product.sku.isNotEmpty()) {
             product_sku.setText(product.sku)
         }
+        product_sku.setOnTextChangedListener { viewModel.updateProductInventoryDraft(sku = it.toString()) }
 
         val manageStock = product.manageStock
-        manageStock_switch.isChecked = manageStock
         enableManageStockStatus(manageStock)
-        manageStock_switch.setOnCheckedChangeListener { _, b ->
-            enableManageStockStatus(b)
+        with(manageStock_switch) {
+            isChecked = manageStock
+            setOnCheckedChangeListener { _, b ->
+                enableManageStockStatus(b)
+                viewModel.updateProductInventoryDraft(manageStock = b)
+            }
         }
 
-        product_stock_quantity.setText(product.stockQuantity.toString())
-        edit_product_backorders.setText(product.backordersToDisplayString(requireContext()))
-        edit_product_stock_status.setText(product.stockStatusToDisplayString(requireContext()))
-
-        edit_product_backorders.setClickListener {
-            ProductInventorySelectorDialog.newInstance(this,
-                    RequestCodes.PRODUCT_INVENTORY_BACKORDERS, getString(R.string.product_backorders),
-                    ProductBackorderStatus.toMap(requireContext()), edit_product_backorders.getText()
-            ).show(parentFragmentManager, ProductInventorySelectorDialog.TAG)
+        with(product_stock_quantity) {
+            setText(product.stockQuantity.toString())
+            setOnTextChangedListener {
+                if (it.toString().isNotEmpty()) {
+                    viewModel.updateProductInventoryDraft(stockQuantity = it.toString())
+                }
+            }
         }
 
-        edit_product_stock_status.setClickListener {
-            ProductInventorySelectorDialog.newInstance(this,
-                    RequestCodes.PRODUCT_INVENTORY_STOCK_STATUS, getString(R.string.product_stock_status),
-                    ProductStockStatus.toMap(requireContext()), edit_product_stock_status.getText()
-            ).show(parentFragmentManager, ProductInventorySelectorDialog.TAG)
+        with(edit_product_backorders) {
+            setText(product.backordersToDisplayString(requireContext()))
+            setClickListener {
+                ProductInventorySelectorDialog.newInstance(this@ProductInventoryFragment,
+                        RequestCodes.PRODUCT_INVENTORY_BACKORDERS, getString(R.string.product_backorders),
+                        ProductBackorderStatus.toMap(requireContext()), edit_product_backorders.getText()
+                ).show(parentFragmentManager, ProductInventorySelectorDialog.TAG)
+            }
+        }
+
+        with(edit_product_stock_status) {
+            setText(product.stockStatusToDisplayString(requireContext()))
+            setClickListener {
+                ProductInventorySelectorDialog.newInstance(this@ProductInventoryFragment,
+                        RequestCodes.PRODUCT_INVENTORY_STOCK_STATUS, getString(R.string.product_stock_status),
+                        ProductStockStatus.toMap(requireContext()), edit_product_stock_status.getText()
+                ).show(parentFragmentManager, ProductInventorySelectorDialog.TAG)
+            }
+        }
+
+        with(soldIndividually_switch) {
+            isChecked = product.soldIndividually
+            setOnCheckedChangeListener { _, b ->
+                viewModel.updateProductInventoryDraft(soldIndividually = b)
+            }
         }
     }
 
@@ -119,16 +154,22 @@ class ProductInventoryFragment : BaseFragment(), ProductInventorySelectorDialogL
         }
     }
 
+    private fun showUpdateProductAction(show: Boolean) {
+        view?.post { publishMenuItem?.isVisible = show }
+    }
+
     override fun onProductInventoryItemSelected(resultCode: Int, selectedItem: String?) {
         when (resultCode) {
             RequestCodes.PRODUCT_INVENTORY_BACKORDERS -> {
                 selectedItem?.let {
                     edit_product_backorders.setText(getString(ProductBackorderStatus.toStringResource(it)))
+                    viewModel.updateProductInventoryDraft(backorderStatus = ProductBackorderStatus.fromString(it))
                 }
             }
             RequestCodes.PRODUCT_INVENTORY_STOCK_STATUS -> {
                 selectedItem?.let {
                     edit_product_stock_status.setText(getString(ProductStockStatus.toStringResource(it)))
+                    viewModel.updateProductInventoryDraft(stockStatus = ProductStockStatus.fromString(it))
                 }
             }
         }
