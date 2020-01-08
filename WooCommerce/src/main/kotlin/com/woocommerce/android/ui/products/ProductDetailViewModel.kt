@@ -217,8 +217,11 @@ class ProductDetailViewModel @AssistedInject constructor(
             ""
         }.trim()
 
+        val updatedProduct = if (viewState.isProductUpdated == true) {
+            storedProduct.mergeProduct(viewState.product)
+        } else storedProduct
         viewState = viewState.copy(
-                product = storedProduct.mergeProduct(viewState.product),
+                product = updatedProduct,
                 weightWithUnits = weight,
                 sizeWithUnits = size,
                 priceWithCurrency = formatCurrency(storedProduct.price, parameters?.currencyCode),
