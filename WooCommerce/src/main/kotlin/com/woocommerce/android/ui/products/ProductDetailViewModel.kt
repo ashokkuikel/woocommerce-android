@@ -14,6 +14,10 @@ import com.woocommerce.android.di.ViewModelAssistedFactory
 import com.woocommerce.android.media.ProductImagesService
 import com.woocommerce.android.media.ProductImagesService.Companion.OnProductImageUploaded
 import com.woocommerce.android.model.Product
+import com.woocommerce.android.model.RequestResponse.Error
+import com.woocommerce.android.model.RequestResponse.IncorrectProductSku
+import com.woocommerce.android.model.RequestResponse.NoActionNeeded
+import com.woocommerce.android.model.RequestResponse.Success
 import com.woocommerce.android.tools.NetworkStatus
 import com.woocommerce.android.tools.SelectedSite
 import com.woocommerce.android.ui.products.ProductDetailViewModel.ProductDetailEvent.ShareProduct
@@ -186,13 +190,17 @@ class ProductDetailViewModel @AssistedInject constructor(
 
     private suspend fun updateProduct(product: Product) {
         if (networkStatus.isConnected()) {
-            if (productRepository.updateProduct(product)) {
-                triggerEvent(ShowSnackbar(string.product_detail_update_product_success))
-                viewState = viewState.copy(isProgressDialogShown = false, isProductUpdated = false, product = null)
-                loadProduct(remoteProductId)
-            } else {
-                triggerEvent(ShowSnackbar(string.product_detail_update_product_error))
-                viewState = viewState.copy(isProgressDialogShown = false)
+            when (productRepository.updateProduct(product)) {
+                Success -> {
+                    triggerEvent(ShowSnackbar(string.product_detail_update_product_success))
+                    viewState = viewState.copy(isProgressDialogShown = false, isProductUpdated = false, product = null)
+                    loadProduct(remoteProductId)
+                }
+                Error -> {
+                    triggerEvent(ShowSnackbar(string.product_detail_update_product_error))
+                    viewState = viewState.copy(isProgressDialogShown = false)
+                }
+                NoActionNeeded, IncorrectProductSku -> { }
             }
         } else {
             triggerEvent(ShowSnackbar(string.offline_error))

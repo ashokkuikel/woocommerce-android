@@ -111,6 +111,7 @@ class ProductInventoryFragment : BaseFragment(), ProductInventorySelectorDialogL
         viewModel.viewStateLiveData.observe(viewLifecycleOwner) { old, new ->
             new.isProductUpdated.takeIfNotEqualTo(old?.isProductUpdated) { showUpdateProductAction(it) }
             new.isProgressDialogShown?.takeIfNotEqualTo(old?.isProgressDialogShown) { showProgressDialog(it) }
+            new.skuErrorMessage?.takeIfNotEqualTo(old?.skuErrorMessage) { displaySkuError(it) }
             new.product?.takeIfNotEqualTo(old?.product) { showProduct(new) }
         }
 
@@ -215,6 +216,10 @@ class ProductInventoryFragment : BaseFragment(), ProductInventorySelectorDialogL
     private fun hideProgressDialog() {
         progressDialog?.dismiss()
         progressDialog = null
+    }
+
+    private fun displaySkuError(messageId: Int) {
+        product_sku.setError(getString(messageId))
     }
 
     override fun onProductInventoryItemSelected(resultCode: Int, selectedItem: String?) {

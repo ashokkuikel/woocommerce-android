@@ -7,6 +7,9 @@ import com.squareup.inject.assisted.AssistedInject
 import com.woocommerce.android.R.string
 import com.woocommerce.android.di.ViewModelAssistedFactory
 import com.woocommerce.android.model.Product
+import com.woocommerce.android.model.RequestResponse.Success
+import com.woocommerce.android.model.RequestResponse.Error
+import com.woocommerce.android.model.RequestResponse.IncorrectProductSku
 import com.woocommerce.android.tools.NetworkStatus
 import com.woocommerce.android.tools.SelectedSite
 import com.woocommerce.android.util.CoroutineDispatchers
@@ -95,7 +98,7 @@ class ProductInventoryViewModel @AssistedInject constructor(
     }
 
     fun onBackButtonClicked(): Boolean {
-        return if (viewState.isProductUpdated == true && viewState.shouldShowDiscardDialog) {
+        return if (viewState.isProductUpdated && viewState.shouldShowDiscardDialog) {
             triggerEvent(ShowDiscardDialog(
                     positiveBtnAction = DialogInterface.OnClickListener { _, _ ->
                         viewState = viewState.copy(shouldShowDiscardDialog = false)
@@ -125,13 +128,21 @@ class ProductInventoryViewModel @AssistedInject constructor(
 
     private suspend fun updateProduct(product: Product) {
         if (networkStatus.isConnected()) {
-            if (productRepository.updateProduct(product)) {
-                triggerEvent(ShowSnackbar(string.product_detail_update_product_success))
-                viewState = viewState.copy(isProgressDialogShown = false, isProductUpdated = false, product = null)
-                loadProduct(product.remoteId)
-            } else {
-                triggerEvent(ShowSnackbar(string.product_detail_update_product_error))
-                viewState = viewState.copy(isProgressDialogShown = false)
+            when (productRepository.updateProduct(product)) {
+                Success -> {
+                    triggerEvent(ShowSnackbar(string.product_detail_update_product_success))
+                    viewState = viewState.copy(isProgressDialogShown = false, isProductUpdated = false, product = null)
+                    loadProduct(product.remoteId)
+                }
+                Error -> {
+                    triggerEvent(ShowSnackbar(string.product_detail_update_product_error))
+                    viewState = viewState.copy(isProgressDialogShown = false)
+                }
+                IncorrectProductSku -> {
+                    viewState = viewState.copy(
+                            isProgressDialogShown = false, skuErrorMessage = string.product_detail_update_sku_error
+                    )
+                }
             }
         } else {
             triggerEvent(ShowSnackbar(string.offline_error))
@@ -145,7 +156,8 @@ class ProductInventoryViewModel @AssistedInject constructor(
         val isProgressDialogShown: Boolean? = null,
         val isProductUpdated: Boolean = false,
         val shouldShowDiscardDialog: Boolean = true,
-        var storedProduct: Product? = null
+        var storedProduct: Product? = null,
+        val skuErrorMessage: Int? = null
     ) : Parcelable
 
     @AssistedInject.Factory

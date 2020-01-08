@@ -6,6 +6,7 @@ import com.woocommerce.android.analytics.AnalyticsTracker.Stat.PRODUCT_DETAIL_UP
 import com.woocommerce.android.analytics.AnalyticsTracker.Stat.PRODUCT_DETAIL_UPDATE_SUCCESS
 import com.woocommerce.android.annotations.OpenClassOnDebug
 import com.woocommerce.android.model.Product
+import com.woocommerce.android.model.RequestResponse
 import com.woocommerce.android.model.toAppModel
 import com.woocommerce.android.model.toDataModel
 import com.woocommerce.android.tools.SelectedSite
@@ -24,6 +25,7 @@ import org.wordpress.android.fluxc.generated.WCProductActionBuilder
 import org.wordpress.android.fluxc.store.WCProductStore
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductChanged
 import org.wordpress.android.fluxc.store.WCProductStore.OnProductUpdated
+import org.wordpress.android.fluxc.store.WCProductStore.ProductErrorType
 import javax.inject.Inject
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
@@ -38,7 +40,7 @@ class ProductDetailRepository @Inject constructor(
         private const val ACTION_TIMEOUT = 10L * 1000
     }
 
-    private var continuationUpdateProduct: Continuation<Boolean>? = null
+    private var continuationUpdateProduct: Continuation<RequestResponse>? = null
     private var continuation: CancellableContinuation<Boolean>? = null
 
     init {
@@ -71,19 +73,19 @@ class ProductDetailRepository @Inject constructor(
      *
      * @return the result of the action as a [Boolean]
      */
-    suspend fun updateProduct(updatedProduct: Product): Boolean {
+    suspend fun updateProduct(updatedProduct: Product): RequestResponse {
         return try {
-            suspendCoroutineWithTimeout<Boolean>(ACTION_TIMEOUT) {
+            suspendCoroutineWithTimeout<RequestResponse>(ACTION_TIMEOUT) {
                 continuationUpdateProduct = it
 
                 val payload = WCProductStore.UpdateProductPayload(
                         selectedSite.get(), updatedProduct.toDataModel(getCachedWCProductModel(updatedProduct.remoteId))
                 )
                 dispatcher.dispatch(WCProductActionBuilder.newUpdateProductAction(payload))
-            } ?: false // request timed out
+            } ?: RequestResponse.Error // request timed out
         } catch (e: CancellationException) {
             WooLog.e(PRODUCTS, "Exception encountered while updating product", e)
-            false
+            RequestResponse.Error
         }
     }
 
@@ -117,10 +119,13 @@ class ProductDetailRepository @Inject constructor(
                         AnalyticsTracker.KEY_ERROR_CONTEXT to this::class.java.simpleName,
                         AnalyticsTracker.KEY_ERROR_TYPE to event.error?.type?.toString(),
                         AnalyticsTracker.KEY_ERROR_DESC to event.error?.message))
-                continuationUpdateProduct?.resume(false)
+                val errorResponse = if (event.error.type == ProductErrorType.DUPLICATE_SKU) {
+                    RequestResponse.IncorrectProductSku
+                } else RequestResponse.Error
+                continuationUpdateProduct?.resume(errorResponse)
             } else {
                 AnalyticsTracker.track(PRODUCT_DETAIL_UPDATE_SUCCESS)
-                continuationUpdateProduct?.resume(true)
+                continuationUpdateProduct?.resume(RequestResponse.Success)
             }
             continuationUpdateProduct = null
         }
