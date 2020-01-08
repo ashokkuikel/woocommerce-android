@@ -120,7 +120,7 @@ class ProductDetailRepository @Inject constructor(
                         AnalyticsTracker.KEY_ERROR_TYPE to event.error?.type?.toString(),
                         AnalyticsTracker.KEY_ERROR_DESC to event.error?.message))
                 val errorResponse = if (event.error.type == ProductErrorType.DUPLICATE_SKU) {
-                    RequestResponse.IncorrectProductSku
+                    RequestResponse.ProductIncorrectSku
                 } else RequestResponse.Error
                 continuationUpdateProduct?.resume(errorResponse)
             } else {

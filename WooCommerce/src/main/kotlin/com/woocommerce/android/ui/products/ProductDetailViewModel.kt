@@ -15,8 +15,7 @@ import com.woocommerce.android.media.ProductImagesService
 import com.woocommerce.android.media.ProductImagesService.Companion.OnProductImageUploaded
 import com.woocommerce.android.model.Product
 import com.woocommerce.android.model.RequestResponse.Error
-import com.woocommerce.android.model.RequestResponse.IncorrectProductSku
-import com.woocommerce.android.model.RequestResponse.NoActionNeeded
+import com.woocommerce.android.model.RequestResponse.ProductIncorrectSku
 import com.woocommerce.android.model.RequestResponse.Success
 import com.woocommerce.android.tools.NetworkStatus
 import com.woocommerce.android.tools.SelectedSite
@@ -200,7 +199,7 @@ class ProductDetailViewModel @AssistedInject constructor(
                     triggerEvent(ShowSnackbar(string.product_detail_update_product_error))
                     viewState = viewState.copy(isProgressDialogShown = false)
                 }
-                NoActionNeeded, IncorrectProductSku -> { }
+                ProductIncorrectSku -> { }
             }
         } else {
             triggerEvent(ShowSnackbar(string.offline_error))

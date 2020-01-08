@@ -9,7 +9,7 @@ import com.woocommerce.android.di.ViewModelAssistedFactory
 import com.woocommerce.android.model.Product
 import com.woocommerce.android.model.RequestResponse.Success
 import com.woocommerce.android.model.RequestResponse.Error
-import com.woocommerce.android.model.RequestResponse.IncorrectProductSku
+import com.woocommerce.android.model.RequestResponse.ProductIncorrectSku
 import com.woocommerce.android.tools.NetworkStatus
 import com.woocommerce.android.tools.SelectedSite
 import com.woocommerce.android.util.CoroutineDispatchers
@@ -138,7 +138,7 @@ class ProductInventoryViewModel @AssistedInject constructor(
                     triggerEvent(ShowSnackbar(string.product_detail_update_product_error))
                     viewState = viewState.copy(isProgressDialogShown = false)
                 }
-                IncorrectProductSku -> {
+                ProductIncorrectSku -> {
                     viewState = viewState.copy(
                             isProgressDialogShown = false, skuErrorMessage = string.product_detail_update_sku_error
                     )
