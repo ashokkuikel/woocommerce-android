@@ -35,7 +35,7 @@ sealed class ProductBackorderStatus(@StringRes val stringResource: Int = 0, val 
         }
 
         fun fromBackorderStatus(backorderStatus: ProductBackorderStatus): String {
-            return when(backorderStatus) {
+            return when (backorderStatus) {
                 Yes -> CoreProductBackOrders.YES.value
                 Notify -> CoreProductBackOrders.NOTIFY.value
                 else -> CoreProductBackOrders.NO.value
