@@ -14,6 +14,7 @@ import com.woocommerce.android.RequestCodes
 import com.woocommerce.android.analytics.AnalyticsTracker
 import com.woocommerce.android.extensions.collapse
 import com.woocommerce.android.extensions.expand
+import com.woocommerce.android.extensions.navigateBackWithResult
 import com.woocommerce.android.extensions.takeIfNotEqualTo
 import com.woocommerce.android.ui.base.BaseFragment
 import com.woocommerce.android.ui.base.UIMessageResolver
@@ -22,6 +23,7 @@ import com.woocommerce.android.ui.main.MainActivity.Companion.BackPressListener
 import com.woocommerce.android.ui.products.ProductInventorySelectorDialog.ProductInventorySelectorDialogListener
 import com.woocommerce.android.ui.products.ProductInventoryViewModel.ViewState
 import com.woocommerce.android.viewmodel.MultiLiveEvent.Event.Exit
+import com.woocommerce.android.viewmodel.MultiLiveEvent.Event.NavigateBackWithResult
 import com.woocommerce.android.viewmodel.MultiLiveEvent.Event.ShowDiscardDialog
 import com.woocommerce.android.viewmodel.MultiLiveEvent.Event.ShowSnackbar
 import com.woocommerce.android.viewmodel.ViewModelFactory
@@ -85,6 +87,18 @@ class ProductInventoryFragment : BaseFragment(), ProductInventorySelectorDialogL
         publishMenuItem = menu.findItem(R.id.menu_done)
     }
 
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.menu_done -> {
+                // TODO: add track event for click
+                ActivityUtils.hideKeyboard(activity)
+                viewModel.onDoneButtonClicked()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
     private fun setupObservers(viewModel: ProductInventoryViewModel) {
         viewModel.viewStateLiveData.observe(viewLifecycleOwner) { old, new ->
             new.productInventoryParameters?.takeIfNotEqualTo(old?.productInventoryParameters) { showProduct(new) }
@@ -101,6 +115,7 @@ class ProductInventoryFragment : BaseFragment(), ProductInventorySelectorDialogL
                         event.negativeBtnAction
                 )
                 is Exit -> requireActivity().onBackPressed()
+                is NavigateBackWithResult -> navigateBackWithResult(event.args)
             }
         })
     }
@@ -190,6 +205,15 @@ class ProductInventoryFragment : BaseFragment(), ProductInventorySelectorDialogL
             product_sku.clearError()
             publishMenuItem?.isEnabled = true
         }
+    }
+
+    private fun navigateBackWithResult(bundle: Bundle) {
+        requireActivity().navigateBackWithResult(
+                RequestCodes.PRODUCT_INVENTORY,
+                bundle,
+                R.id.nav_host_fragment_main,
+                R.id.productDetailFragment
+        )
     }
 
     override fun onProductInventoryItemSelected(resultCode: Int, selectedItem: String?) {

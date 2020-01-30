@@ -21,6 +21,7 @@ import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.woocommerce.android.R
+import com.woocommerce.android.RequestCodes
 import com.woocommerce.android.analytics.AnalyticsTracker
 import com.woocommerce.android.analytics.AnalyticsTracker.Stat
 import com.woocommerce.android.analytics.AnalyticsTracker.Stat.PRODUCT_DETAIL_SHARE_BUTTON_TAPPED
@@ -44,6 +45,7 @@ import com.woocommerce.android.ui.products.ProductDetailViewModel.ProductDetailE
 import com.woocommerce.android.ui.products.ProductDetailViewModel.ProductDetailEvent.ShowImageChooser
 import com.woocommerce.android.ui.products.ProductDetailViewModel.ProductDetailEvent.ShowImages
 import com.woocommerce.android.ui.products.ProductDetailViewModel.ViewState
+import com.woocommerce.android.ui.products.ProductInventoryViewModel.ProductInventoryParameters
 import com.woocommerce.android.ui.products.ProductType.EXTERNAL
 import com.woocommerce.android.ui.products.ProductType.GROUPED
 import com.woocommerce.android.ui.products.ProductType.VARIABLE
@@ -847,6 +849,10 @@ class ProductDetailFragment : BaseFragment(), OnGalleryImageClickListener, Navig
                 if (result.getBoolean(AztecEditorFragment.ARG_AZTEC_HAS_CHANGES)) {
                     viewModel.updateProductDraft(result.getString(ARG_AZTEC_EDITOR_TEXT))
                 }
+            }
+            RequestCodes.PRODUCT_INVENTORY -> {
+                val updatedInventory = result.getParcelable(ProductInventoryViewModel.BUNDLE_PRODUCT_INVENTORY_MODEL) as? ProductInventoryParameters
+                // TODO: add logic to update the product model with the inventory changes
             }
         }
     }

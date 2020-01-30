@@ -1,6 +1,7 @@
 package com.woocommerce.android.viewmodel
 
 import android.content.DialogInterface.OnClickListener
+import android.os.Bundle
 import androidx.annotation.MainThread
 import androidx.annotation.StringRes
 import androidx.lifecycle.LifecycleOwner
@@ -74,6 +75,20 @@ open class MultiLiveEvent<T : Event> : MutableLiveData<T>() {
                 result = 31 * result + args.contentHashCode()
                 result = 31 * result + (undoAction?.hashCode() ?: 0)
                 return result
+            }
+        }
+
+        data class NavigateBackWithResult(val args: Bundle) : Event() {
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (other !is NavigateBackWithResult) return false
+
+                if (args != other.args) return false
+                return true
+            }
+
+            override fun hashCode(): Int {
+                return args.hashCode()
             }
         }
 

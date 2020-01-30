@@ -1,6 +1,7 @@
 package com.woocommerce.android.ui.products
 
 import android.content.DialogInterface
+import android.os.Bundle
 import android.os.Parcelable
 import com.squareup.inject.assisted.Assisted
 import com.squareup.inject.assisted.AssistedInject
@@ -9,6 +10,7 @@ import com.woocommerce.android.di.ViewModelAssistedFactory
 import com.woocommerce.android.util.CoroutineDispatchers
 import com.woocommerce.android.viewmodel.LiveDataDelegate
 import com.woocommerce.android.viewmodel.MultiLiveEvent.Event.Exit
+import com.woocommerce.android.viewmodel.MultiLiveEvent.Event.NavigateBackWithResult
 import com.woocommerce.android.viewmodel.MultiLiveEvent.Event.ShowDiscardDialog
 import com.woocommerce.android.viewmodel.SavedStateWithArgs
 import com.woocommerce.android.viewmodel.ScopedViewModel
@@ -24,6 +26,7 @@ class ProductInventoryViewModel @AssistedInject constructor(
 ) : ScopedViewModel(savedState, dispatchers) {
     companion object {
         private const val SEARCH_TYPING_DELAY_MS = 500L
+        const val BUNDLE_PRODUCT_INVENTORY_MODEL = "arg_product_inventory_model"
     }
 
     val viewStateLiveData = LiveDataDelegate(savedState, ViewState())
@@ -128,6 +131,14 @@ class ProductInventoryViewModel @AssistedInject constructor(
         } else {
             true
         }
+    }
+
+    fun onDoneButtonClicked() {
+        viewState = viewState.copy(shouldShowDiscardDialog = false)
+
+        val bundle = Bundle()
+        bundle.putParcelable(BUNDLE_PRODUCT_INVENTORY_MODEL, viewState.productInventoryParameters)
+        triggerEvent(NavigateBackWithResult(bundle))
     }
 
     private fun loadProduct(remoteProductId: Long) {
